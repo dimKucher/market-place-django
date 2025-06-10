@@ -1,0 +1,163 @@
+version: '3.7'
+
+services:
+
+  # DB POSTGRES
+  database:
+    container_name: shop_db
+    image: postgres:14.1-alpine
+    restart: unless-stopped
+    volumes:
+      - pg_data:/var/lib/postgresql/data/
+    env_file:
+      - .env
+    expose:
+      - 5432
+
+  # PG_ADMIN FOR POSTGRES
+#  pgadmin:
+#    container_name: pg_admin
+#    image: dpage/pgadmin4:5.7
+#    env_file:
+#      - .env
+##    environment:
+##      PGADMIN_DEFAULT_EMAIL: "habrpguser@habr.com"
+##      PGADMIN_DEFAULT_PASSWORD: "pgadmin"
+##      PGADMIN_CONFIG_SERVER_MODE: "False"
+#    volumes:
+#      - ./pgadmin:/var/lib/pgadmin
+#    ports:
+#      - "5050:80"
+#    #    restart: unless-stopped
+#    #    deploy:
+#    #      resources:
+#    #        limits:
+#    #          cpus: '0.5'
+#    #          memory: 500M
+#    #    networks:
+#    #      - postgres
+
+  # DJANGO APP
+  shop_app:
+    container_name: shop_app
+    build:
+      context: ./shop
+      dockerfile: Dockerfile
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: '256M'
+        reservations:
+          cpus: '1'
+          memory: '128M'
+    entrypoint: /usr/src/app/entrypoint.sh
+    volumes:
+      - ./shop:/usr/src/app
+      - static_volume:/usr/src/app/assets
+      - media_volume:/usr/src/app/media
+    ports:
+      - "8000:8000"
+    expose:
+      - 8000
+    env_file:
+      - .env
+    depends_on:
+      - database
+      - redis
+    links:
+      - database
+      - redis
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "200k"
+
+
+  # NGINX
+  nginx:
+    build: ./nginx
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: '256M'
+        reservations:
+          cpus: '1'
+          memory: '128M'
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d/
+      - static_volume:/usr/src/app/assets
+      - media_volume:/usr/src/app/media
+  # REDIS
+  redis:
+    image: redis:7.0.5-alpine
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: '256M'
+        reservations:
+          cpus: '1'
+          memory: '128M'
+    restart: unless-stopped
+    container_name: redis
+    expose:
+      - 6379
+
+
+  # CELERY
+  # celery -A shop.celery:app flower --loglevel=DEBUG --port=9090 --pool=solo
+  # --pool=prefork --concurrency=4 --concurrency 1 -E
+  celery:
+    build:
+      context: ./shop
+      dockerfile: Dockerfile
+    container_name: celery
+    entrypoint: /usr/src/app/celery_entrypoint.sh
+    # command: celery -A shop.celery:app worker --pool=solo  --loglevel=INFO
+    volumes:
+      - celery_volume:/usr/src/app
+    env_file:
+      - .env
+    depends_on:
+      - shop_app
+      - redis
+
+  # FLOWER
+  flower:
+     build:
+        context: ./shop
+     container_name: flower
+     hostname: flower
+     entrypoint: celery
+     command: -A shop.celery:app flower  --port=5555
+     env_file:
+        - .env
+     ports:
+       - "127.0.0.1:5555:5555"
+     volumes:
+       - flower_data:/usr/src/app/flower
+    #   volumes:
+    #      - flower_data:/usr/src/app/flower
+    #     # - /var/lib/docker/volumes/shop_diplom_celery_volume/_data: /usr/src/app/flower
+    #   links:
+    #     - redis
+    #     - database
+     depends_on:
+      - shop_app
+      - redis
+      - celery
+
+
+volumes:
+  pg_data:
+  celery_volume:
+  static_volume: {}
+  media_volume: {}
+  nginx_conf:
+  flower_data: {}

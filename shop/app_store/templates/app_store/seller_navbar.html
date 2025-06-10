@@ -1,0 +1,30 @@
+<!--    NAVBAR  -->
+<nav class="row-block row-block_right Header-menu">
+    <div class="menuModal" id="navigate">
+        <ul class="menu menu_main">
+             <li class="menu-item">
+                <a class="menu-link" href="{% url 'app_store:dashboard' %}">главная
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="{% url 'app_store:store_list' %}">магазины
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="{% url 'app_store:delivery_list' %}?status=paid">Заказы
+                    {% if all_new_order_amount %}
+                    <span class="CartBlock-amount">{{ all_new_order_amount }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            <li class="menu-item">
+                <a class="menu-link" href="{% url 'app_store:comment_list' %}">Отзывы
+                    {% if reviews %}
+                    <span class="CartBlock-amount">{{ reviews }}</span>
+                    {% endif %}
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<!--    NAVBAR END -->

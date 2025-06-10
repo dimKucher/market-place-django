@@ -1,0 +1,189 @@
+{% extends 'app_store/seller_index.html' %}
+{% load static  %}
+{% load cache %}
+{% block title %}
+Заказы магазина
+{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+     <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">
+                    {% if request.GET.stores %}
+                    {% for st in user.store.all %}
+                    {% if request.GET.stores == st.title %}
+                    заказы - {{ st }} - {{ object_list.count }}
+                    {% endif %}
+                    {% endfor %}
+                    {% else %}
+                    список заказаных товаров
+                    {% endif %}
+                </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:dashboard' %}">главная стариница
+                        </a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>История заказов
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--    MESSAGE STRING  -->
+    {% include 'messages/message.html' %}
+    <!--    MESSAGE STRING  -->
+    <div class="Section">
+        <div class="wrap">
+            <div class="Section-content">
+                <div class="Orders">
+                    <div class="Order Order_anons">
+                    <form class="Order-personal" method="get"  action="{% url 'app_store:delivery_list' %}">
+                        <div class="row">
+                            <div class="form-input">
+                                <select name="stores" id="stores">
+                                    <option value="">- все магазины - </option>
+                                    {% for store in user.store.all %}
+                                    {% if store.title == request.GET.stores %}
+                                    <option value="{{ store }}" selected>{{ store.title|upper }}</option>
+                                    {% else %}
+                                    <option value="{{ store }}">{{ store.title|upper }}</option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-label">&#8195;</div>
+                            <div class="form-input">
+                                <select name="status" id="status">
+                                    <option value="">- статус заказа -</option>
+                                    {% for status in status_list %}
+                                    {% if status.0 == request.GET.status %}
+                                    <option value="{{ status.0 }}" selected>{{ status.1 }}</option>
+                                    {% else %}
+                                    <option value="{{ status.0 }}">{{ status.1 }}</option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-label">&#8195;</div>
+                            <input class="form-input" name="search" value="{{ request.GET.search }}"
+                                   placeholder="поиск по номеру заказа">
+                            <div class="form-label">&#8195;</div>
+                            <input class="form-input btn btn_square  btn_full btn_success"
+                                   id="button_id" type="submit" value="найти">
+                            <div class="form-label">&#8195;</div>
+                            <a class="form-input btn btn_square btn_dark btn_full"
+                               href="{% url 'app_store:delivery_list'%}" >очистить
+                            </a>
+                        </div>
+                    </form>
+                    </div>
+
+                    <div class="Order Order_anons">
+                    <div class="Order">
+                        <div class="Order-personal">
+                            <div class="row">
+                                <div class="row-block ">
+                                    <div class=" Order-info">номер заказа
+                                    </div>
+                                </div>
+                                <div class="row-block ">
+                                    <div class=" Order-info">магазин
+                                    </div>
+                                </div>
+                                <div class="row-block">
+                                    <span class="Order-info">статус
+                                    </span>
+                                </div>
+                                <div class="row-block">
+                                    <div class="Order-info">оплата
+                                    </div>
+                                </div>
+                                <div class="row-block">
+                                    <div class="Order-info"> сумма
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    {% for order in object_list %}
+                    <div class="Order Order_anons">
+                        <div class="Order ">
+                            <div class="Order-personal">
+                                <div class="row">
+                                    <div class="row-block ">
+                                        <a class="Order-info" href="{% url 'app_store:delivery_detail' order.id %}">
+                                        <span class="Order-numberOrder">{{ order }}
+                                        </span>
+                                        </a>
+                                        {{ order.created|date:"j M o" }}<br>
+                                    </div>
+                                    <div class="row-block ">
+                                        <div class="Order-info">
+                                            {% for shop in order.store.all %}
+                                            {% if shop in user.store.all %}
+                                            {{ shop|upper }}
+                                            {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+
+                                    <div class="row-block ">
+                                        <div class="Order-info">
+                                            <div class="Order-info Order-infoContent-left">
+                                              {% include 'app_order/order/status_list.html' %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-block">
+                                        <div class="Order-info">
+                                            <div class="Order-infoType"></div>
+                                        </div>
+                                        <div class="Order-info">
+                                            <div class="Order-infoType ">
+                                                {% if order.is_paid %}
+                                                <span class="Order-price success-text">оплачен</span>
+                                                {% else %}
+                                                <span class="Order-price danger-text">не оплачен</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row-block">
+                                        <div class="Order-info">
+                                            <div class="Order-infoType "></div>
+                                        </div>
+                                        <div class="Order-info">
+                                            <div class="Order-infoType">
+                                                <span>$</span>
+                                                <span class="Order-price">{{ order.total_sum|floatformat:"2" }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% empty %}
+                    <div class="Order-personal">
+                        <img src="/media/default_images/not_orders.png" width="100%">
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!--       PAGINATION         -->
+                {% include "pagination/pagination.html" %}
+                <!--       PAGINATION         -->
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

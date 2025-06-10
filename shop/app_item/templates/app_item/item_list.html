@@ -1,0 +1,512 @@
+{% extends 'index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %}Каталог{% endblock %}
+
+{% block heard %}
+    {% include 'search_string.html' %}
+{% endblock %}
+
+{% block content %}
+
+<div class="Middle Middle_top" xmlns="http://www.w3.org/1999/html">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">
+                    {% if sort_message %}
+                        {{ sort_message }} найдено
+                        <strong>{{ object_list.paginator.count }}</strong> позиций
+                    {% elif q %}
+                        по запросу <strong>"{{ q }}"</strong>
+                        найдено <strong>{{ object_list.paginator.count }}</strong> позиций
+                    {% else %}
+                        Каталог товаров
+                    {% endif %}
+                </h1>
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'main' %}">главная стариница
+                        </a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>
+                            {% if category %}{{ category }}
+                            {% elif tag %}{{ tag }}
+                            {% elif store %}{{ store }}
+                            {% endif %}
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% include 'messages/message.html' %}
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+
+                <!--  IF STORE IS CHOSEN -->
+                {% if store %}
+                <header class="Section-header">
+                    <strong class="Section-title">{{ store.title }}</strong>
+                </header>
+                <div class="Section-columnContent">
+                    <!--    FORM    -->
+                    <div class="form">
+                        <form>
+                            <div class="form-group">
+                                <div class="ProductCard-title">
+                                    <i class="uil uil-store-alt"></i>{{ store.title }}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="Card-content Card-title">
+                                    <div class="Card-content">скидка
+                                        <b class="success-text">{{ store.discount }}%
+                                        </b>
+                                    </div>
+                                    <div class="Card-content">при заказе от:
+                                        <b class="primary-text">${{ store.min_for_discount }}
+                                        </b>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="Profile-avatar">
+                                    <div class="Profile-img">
+                                        <img class="" src="{{ store.logo.url }}">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
+                    </div>
+                    <!--    FORM    -->
+                </div>
+                {% endif %}
+                 <!--  IF STORE IS CHOSEN -->
+
+                <!--  IF CATEGORY IS CHOSEN -->
+                {% if category %}
+                <div class="Section-columnSection">
+                    <header class="Section-header">
+                        <strong class="Section-title">
+                            категория:
+                        </strong>
+                    </header>
+                    <div>
+                       <div class="primary-text" style="margin-bottom: 5px">
+                            <b>{{ category }}</b>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                <!--  IF CATEGORY IS CHOSEN -->
+
+                <!--  IF TAG IS CHOSEN -->
+                {% if tag %}
+                <div class="Section-columnSection">
+                    <header class="Section-header">
+                        <strong class="Section-title">
+                            тег:
+                        </strong>
+                    </header>
+                    <div>
+                       <div class="warning-text" style="margin-bottom: 5px">
+                            <b># {{ tag }}</b>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                <!--  IF TAG IS CHOSEN -->
+
+                <!--  OFFER CATEGORY SET IN QUERY -->
+                {% if related_category_list %}
+                <div class="Section-columnSection">
+                    <header class="Section-header">
+                        <strong class="Section-title">
+                            связанные категории:
+                        </strong>
+                    </header>
+                    <div>
+                        {% for cat in related_category_list %}
+                        <div class="btn btn_square btn_dark btn_narrow btn_sm" style="margin: 10px 0;">
+                            <a href="{% url 'app_item:item_category' category=cat.slug %}?{{ request.META.QUERY_STRING }}"
+                               style="color: white; padding: 10px; 0;">
+                                <b>{{ cat }}</b>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                <!--  OFFER CATEGORY SET IN QUERY -->
+                {% if object_list %}
+                <!-- FILTER  -->
+                {% if category %}
+                <div class="Section-columnSection">
+                    <header class="Section-header">
+                        <strong class="Section-title">Фильтр
+                        </strong>
+                    </header>
+                    <!-- FILTER TAGS -->
+                    <div>
+                        <!--   CANCEL ALL REQUEST PARAMS   -->
+                        {% if get_params.keys %}
+                        <a class="btn    btn_sm" style="margin-bottom: 5px" href="{{ request.META.PATH_INFO }}">
+                            <strong>сбросить всё
+                            </strong>
+                            <span class="close-cross">X</span>
+                        </a>
+                        {% endif %}
+                        <!--   CANCEL ALL REQUEST PARAMS   -->
+
+                        <!--   LIST OF CHOSEN REQUEST PARAMS AND CANCELLATION ONE BY ONE    -->
+                        {% for key_param, value_param in get_params.items %}
+                            {% if key_param %}
+                            <a class="btn btn_default btn_sm"
+                               style="margin-bottom: 5px"
+                               href="{% url 'app_item:remove_param' param=value_param  %}">
+                                {{ key_param }}
+                                <span class="close-cross">X</span>
+                            </a>
+                            {% endif %}
+                          {% endfor %}
+                         <!--   LIST OF CHOSEN REQUEST PARAMS AND CANCELLATION ONE BY ONE    -->
+                    </div>
+                    <!-- FILTER FORM  -->
+                    <div class="Section-columnContent">
+                        <!--    FORM    -->
+                        <form class="form" action="" method="get">
+                            <!--    PRICE SLIDER -->
+                            <div class="form-group">
+                                <div class="range Section-columnRange">
+                                    <input class="range-line" id="price" name="price" type="text" data-offset=""
+                                           data-type="double"
+                                           data-min="{{ price_min_in_category }}"
+                                           data-max="{{ price_max_in_category }}"
+                                           data-from="{{ price_min }}"
+                                           data-to="{{ price_max  }}"/>
+                                    <div class="range-price">цена:&#32;
+                                        <div class="rangePrice"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--    PRICE SLIDER -->
+
+                            <!--    TITLE INPUT -->
+                            <div class="form-group">
+                                <input class="form-input form-input_full" name="title" type="search"
+                                       placeholder="название товара"
+                                       value="{% if request.GET.title %} {{ request.GET.title }}{% endif %}"/>
+                            </div>
+                            <!--    TITLE INPUT -->
+
+
+                            <!--    ONLY AVAILABLE ITEMS CHECKBOX -->
+                            <div class="form-group">
+                                <label class="toggle">
+                                    {% if 'is_available' in get_params.values %}
+                                    <input type="checkbox" name="is_available" value="True" checked/>
+                                    {% else %}
+                                    <input type="checkbox" name="is_available" value="True"/>
+                                    {% endif %}
+                                    <span class="toggle-box"></span>
+                                    <span class="toggle-text">Только товары в наличии</span>
+                                </label>
+                            </div>
+                            <!--    ONLY AVAILABLE ITEMS CHECKBOX -->
+
+                            <!--    FREE DELIVERY ITEMS CHECKBOX -->
+                            <div class="form-group">
+                                <label class="toggle">
+                                    <input type="checkbox"/>
+                                    <span class="toggle-box"></span>
+                                    <span class="toggle-text">С бесплатной доставкой</span>
+                                </label>
+                            </div>
+                            <!--    FREE DELIVERY ITEMS CHECKBOX -->
+
+                            <!--    OTHERS SPECIFICATIONS  OF ITEMS CHECKBOX   -->
+                            {% if  category.feature.all %}
+                             <div class="Section-columnSection">
+                                 <header class="Section-header">
+                                     <strong class="Section-title">ХАРАКТЕРИСТИКИ</strong>
+                                 </header>
+                                {% for feature in  category.feature.all %}
+                                 <div class="form-group">
+                                     <label class="toggle">{{ feature|lower }} </label>
+                                     {% for value in feature.values.all %}
+                                    <div>
+                                     <label class="toggle">
+                                         <input type="checkbox"
+                                                {% if value.slug in get_params.values  %}checked="checked"{% endif %}
+                                                name="{{ value.feature.slug }}" value="{{ value.slug }}" multiple/>
+                                         <span class="toggle-box"></span>
+                                         <span class="toggle-text">{{ value }}</span>
+                                     </label></div>
+                                     {% endfor %}
+                                </div>
+                                {% endfor %}
+                             </div>
+                            {% endif %}
+                            <!--    OTHERS SPECIFICATIONS  OF ITEMS CHECKBOX   -->
+
+                            <!--    COLOR SET    -->
+                            <div class="Section-columnSection">
+                                <header class="Section-header">
+                                    <strong class="Section-title">Цвета
+                                    </strong>
+                                </header>
+                                <div class="form-group">
+                                    {% for color in set_colors %}
+                                    <label class="toggle">
+                                        <input type="checkbox" name="color" value="{{ color }}"
+                                               {% if color in get_params.values %} checked="checked" {% endif %}
+                                               multiple/>
+                                        <span class="toggle-box "
+                                              style="box-shadow: 0 0 1px 1px rgba(0,0,0,0.4);
+                                          {% if color in  get_params.values %}border: 2px solid {{ color }}; width: 20px; height: 20px;
+                                          {% else %} background-color: {{ color }};{% endif %}">
+                                    </span>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!--    COLOR SET    -->
+                            <div class="Section-columnSection">
+                                <div class="form-group">
+                                    <div class="buttons">
+                                        <button class="btn btn_square btn_dark btn_narrow" type="submit">Применить фильтр
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <!--    FILTER FORM    -->
+                </div>
+                {% endif %}
+                <!-- FILTER  -->
+
+                <!--     MOST POPULAR 10 TAGS -->
+                {% if set_tags %}
+                <div class="Section-columnSection">
+                    <header class="Section-header">
+                        <strong class="Section-title">
+                            {% if category %}
+                                теги по категории {{ category|upper }}
+                            {% else %}
+                                ТОП 10 тегов
+                            {% endif %}
+                        </strong>
+                    </header>
+                    <!--     TAGS        -->
+                    <div class="Section-columnContent">
+                        <div class="buttons">
+                            {% for tag in set_tags|slice:10 %}
+                            <a class="btn btn_default btn_sm"
+                               href="{{ tag.get_absolute_url }}">
+                                #{{ tag.title }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <!--     TAGS   END     -->
+                </div>
+                {% endif %}
+                <!--     MOST POPULAR 10 TAGS -->
+                {% endif %}
+            </div>
+
+            <!--    SORT BY     -->
+            <div class="Section-content">
+                <div class="Sort">
+                    <div class="Sort-title">Сортировать по:</div>
+
+                    <div class="Sort-variants">
+                        {% if 'cheep_first' in request.GET.values %}
+                        <a class="Sort-sortBy Sort-sortBy_inc"
+                            href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=rich_first">
+                            сначала дороже
+                        </a>
+                        {% elif 'rich_first' in request.GET.values %}
+                        <a class="Sort-sortBy Sort-sortBy_dec"
+                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=cheep_first">
+                            сначала дешевле
+                        </a>
+                        {% else %}
+                        <a class="Sort-sortBy Sort-sortBy_inc"
+                            href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=cheep_first">
+                            сначала дороже
+                        </a>
+                        {% endif %}
+
+                        <a class="Sort-sortBy Sort-sortBy_dec"
+                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=best_seller">
+                            популярности
+                        </a>
+
+                        <a class="Sort-sortBy Sort-sortBy_dec"
+                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=by_comments">
+                            отзывам
+                        </a>
+                        <a class="Sort-sortBy Sort-sortBy_dec"
+                           href="?{% for key, val in request.GET.lists  %}{% if key != 'order_by' %}{{ key }}={{ val|join:';'|urlencode}}&{% endif %}{% endfor %}order_by=-created">
+                            новые
+                        </a>
+
+                    </div>
+
+                </div>
+                <!--    SORT BY END    -->
+
+                <!--       PAGINATION         -->
+                <div>{% include "pagination/pagination.html" %}<br></div>
+                <!--       PAGINATION         -->
+
+                <!--    CARD    -->
+                <div class="Cards" id="all_cards">
+                    {% for item in object_list %}
+                    <div class="Card"
+                         data-price="{{ item.price }}"
+                         data-views="{{ item.total_views }}"
+                         data-comments="{{ item.item_comments.count }}"
+                         data-new="{{ item.created }}">
+
+                        <a class="Card-picture" href="{% url 'app_item:item_detail' item.pk %}"
+                           title="{{ item.title }}">
+                            <img class="card-picture-image
+                            {% if not item.is_available or  item.is_active %}
+                            not_available
+                            {% endif %}"
+                             src="{{ item.main_image }}"
+                             alt="{{ item.title|truncatechars:'6' }}"/>
+                        </a>
+
+                        {% if not item.is_available  or  item.is_active %}
+                        <div class="sold_out">
+                            <span style="padding-top:20px">РАЗОБРАЛИ
+                            </span>
+                        </div>
+                        {% endif %}
+
+                        {% if item in in_cart %}
+                        <div class="Card-item_in_cart">
+                            <i class="uil uil-shopping-cart-alt" style="margin-right: 10px"></i>в корзине
+                        </div>
+                        {% endif %}
+
+                        {% if item.pk in request.session.favorites %}
+                        <div class="Cart-item-favorites ">
+                             <a href="{% url 'app_favorite:remove_item' item.pk %}" title="Добавить в избранное">
+                                 <img src="/assets/img/icons/star.svg" width="35">
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="Cart-item-favorites">
+                            <a href="{% url 'app_favorite:add_item' item.pk %}" title="Убрать из избранного">
+                                <img src="/assets/img/icons/star_off.svg" width="35">
+                            </a>
+                        </div>
+                        {% endif %}
+
+
+                        {% if category %}
+                        {% if item.pk in request.session.compares %}
+                        <div class="Cart-item-compare ">
+                             <a href="{% url 'app_compare:remove_item' item.pk %}" title="Убрать из сравнения">
+                                   <i class="uil-graph-bar " style="color:#ffca00; font-size:25px"></i>
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="Cart-item-compare in-compare">
+                            <a href="{% url 'app_compare:add_item' item.pk %}" title="добавить в сравнение">
+                                   <i class="uil-graph-bar " style="color:#A5ABBA; font-size:25px"></i>
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                        <div class="Card-content">
+                            <strong class="Card-title">
+                                <a href="{% url 'app_item:item_detail' item.pk %}" data-value="{{item.title}}"
+                                   title="{{ item.title }}">
+                                    {{ item.title|truncatechars:14 }}
+
+                                </a>
+                            </strong>
+                            <div class="Card-icon-view-and-sell">
+                                <div class="Card-icon Card-icon-image">
+                                    <a href="{% url 'app_item:item_detail' item.pk %}#reviews">
+                                        <img src="/assets/img/icons/comments.svg" width="20" height="20">
+                                    </a>
+                                </div>
+                                <div class="Card-icon">{{ item.comments.count }}</div>
+                                <div class="Card-icon Card-icon-image">
+                                    <img src="/assets/img/icons/view.svg" width="20" height="20"></div>
+                                <div class="Card-icon">{{ item.total_views }}</div>
+                                <div class="Card-icon Card-icon-image">
+                                    <img src="/assets/img/icons/cart.svg" width="20" height="20"></div>
+                                <div class="Card-icon">{{ item.purchases }}</div>
+                            </div>
+                            <div class="Card-description">
+                                <div class="Card-cost">
+                                    <span class="Card-price" id="price_item">
+                                        {% if  item.is_available  or  item.is_active %}
+                                            ${{  item.price  }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+
+                                <div class="Card-category">
+                                    {% if item.category.parent_category %}
+                                    {{item.category.parent_category}} / {{item.category}}
+                                    {% else %}
+                                    {{item.category}}
+                                    {% endif %}
+                                </div>
+                                <!--    FOR DEBUG   -->
+                                {% for value in item.feature_value.all %}
+                                <span class="secondary_label"
+                                style="font-weight:700; font-size:12px; display: block; text-align: end">
+                                    {{ value|truncatechars:19 }}</span>
+                                {% endfor %}
+                                <!--      FOR DEBUG  -->
+
+
+                                {% if not request.user.is_authenticated or request.user.profile.is_customer %}
+                                <div class="Card-hover">
+                                    {% if item in in_cart %}
+                                    <a href="{% url 'app_cart:remove_cart' pk=item.pk  %}">удалить из корзины</a>
+                                    {% else %}
+                                    <a href="{% url 'app_cart:add_cart' pk=item.pk  %}">
+                                        <img src="/assets/img/icons/card/cart.svg" alt="cart.svg"/>
+                                        <p> добавить в корзину</p>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="form-group">
+                     <img src="/media/default_images/not_found.png" width="100%">
+                    </div>
+                    {% endfor %}
+                </div>
+                <!--    CARD     -->
+
+                <!--       PAGINATION         -->
+                {% include "pagination/pagination.html" %}
+                <!--       PAGINATION         -->
+            </div>
+            <!--    SORT BY     -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}

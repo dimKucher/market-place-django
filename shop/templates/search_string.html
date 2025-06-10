@@ -1,0 +1,69 @@
+{% load cache %}
+<div class="Header-searchWrap">
+        <div class="wrap">
+
+            <div class="Header-categories">
+                <div class="CategoriesButton">
+                    <div class="CategoriesButton-title">
+                        <div class="CategoriesButton-icon">
+                            <img src="/assets/img/icons/allDep.svg" alt="allDep.svg"/>
+                        </div>
+                        <span class="CategoriesButton-text">Категории</span>
+                        <div class="CategoriesButton-arrow">
+                        </div>
+                    </div>
+                    <div class="CategoriesButton-content">
+                        {% for category in categories %}
+                        {% if not category.parent_category %}
+                        <div class="CategoriesButton-link">
+                            <a href="{% url 'app_item:item_category' category=category.slug %}">
+                                <div class="CategoriesButton-icon">
+                                    <img src="{{ category.icon }}" width="15px"/>
+                                </div>
+                                <span class="CategoriesButton-text">{{category.title}}</span>
+
+                                {% if category.sub_categories.all.count > 0 %}
+                                <a class="CategoriesButton-arrow" href="#"></a>
+                                <div class="CategoriesButton-submenu">
+                                    {% for sub_category in category.sub_categories.all %}
+                                    <a class="CategoriesButton-link"
+                                       href="{% url 'app_item:item_category' category=sub_category.slug %}">
+                                        <div class="CategoriesButton-icon">
+                                             <img src="{{ sub_category.icon }}" width="15px"/>
+                                        </div>
+                                        <div class="CategoriesButton-icon">
+                                             {{  sub_category.items.count }}
+                                        </div>
+                                        <span class="CategoriesButton-text">
+                                            {{  sub_category.title|truncatechars:13  }}
+                                        </span>
+                                    </a>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="Header-searchLink">
+                <img src="/assets/img/icons/search.svg" alt="search.svg"/>
+            </div>
+            <div class="Header-search">
+                <div class="search">
+                    <form class="form form_search" action="{% url 'app_item:search' %}" method="get">
+                        <input class="search-input" id="query" name="q" type="text"
+                               value="{{ request.GET.g }}" placeholder="Что вы ищите..."/>
+                        <button class="search-button" type="submit" id="search">
+                            <img src="/assets/img/icons/search.svg" alt="search.svg"/>
+                            поиск
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>

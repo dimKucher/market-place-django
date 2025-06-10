@@ -1,0 +1,228 @@
+{% extends 'app_settings/admin/admin_index.html' %}
+{% load static %}
+{% block title %}Главная страница{% endblock %}
+
+
+{% block content %}
+<!-- {% url 'app_settings:category_list' %} -->
+<!--{% url 'app_settings:tag_list' %}-->
+
+
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Главная страница администратора</h1>
+            </div>
+        </div>
+    </div>
+    {% include 'messages/message.html' %}
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                <div class="Section-columnSection">
+                    <header class="Section-header">
+                        <strong class="Section-title">Навигация</strong>
+                    </header>
+                    {% include "app_settings/admin/sidebar_admin.html" %}
+                </div>
+            </div>
+            <div class="Section-content">
+
+                <!--    CARD    -->
+                <div class="Cards">
+                    <div class="Card">
+                        <a class="Card-picture" href="{% url 'app_settings:customer_list' %}">
+                            <img class="card-picture-image" src="/media/default_images/customers_image.png" alt="покуматели"/>
+                        </a>
+                        <div class="Card-content">
+                            <strong class="Card-title">
+                                <span>Покуматели
+                                </span>
+                            </strong>
+
+                            <div class="Card-description">
+                                <div class="Card-cost">
+                                    <span class="Card-price">{{ customer  }}
+                                    </span>
+                                </div>
+                                <div class="Card-category">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="Card">
+                        <a class="Card-picture" href="{% url 'app_settings:seller_list' %}">
+                            <img class="card-picture-image" src="/media/default_images/sellers_image.png" alt="продавцы"/>
+                        </a>
+                        <div class="Card-content">
+                            <strong class="Card-title">
+                                <span>Продавцы
+                                </span>
+                            </strong>
+
+                            <div class="Card-description">
+                                <div class="Card-cost">
+                                    <span class="Card-price">{{ seller }}
+                                    </span>
+                                </div>
+                                <div class="Card-category">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="Card">
+                        <a class="Card-picture" href="{% url 'app_settings:store_list' %}">
+                            <img class="card-picture-image" src="/media/default_images/stores_image.png" alt="магазины"/>
+                        </a>
+                        <div class="Card-content">
+                            <strong class="Card-title">
+                                <span>Магазины
+                                </span>
+                            </strong>
+
+                            <div class="Card-description">
+                                <div class="Card-cost">
+                                    <span class="Card-price" >{{ stores }}
+                                    </span>
+                                </div>
+
+                                <div class="Card-category">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="Card">
+                        <a class="Card-picture"  href="{% url 'app_settings:admin_order_list' %}">
+                            <img class="card-picture-image" src="/media/default_images/orders_image.png" alt="заказы"/>
+                        </a>
+                        <div class="Card-content">
+                            <strong class="Card-title">
+                                <span>Заказы
+                                </span>
+                            </strong>
+
+                            <div class="Card-description">
+                                <div class="Card-cost">
+                                    <span class="Card-price">{{ orders }}
+                                    </span>
+                                </div>
+
+                                <div class="Card-category">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="Card">
+                        <a class="Card-picture"  href="{% url 'app_settings:comments_list' %}">
+                            <img class="card-picture-image" src="/media/default_images/comments.png" alt="заказы"/>
+                        </a>
+                        <div class="Card-content">
+                            <strong class="Card-title">
+                                <span>Отзывы
+                                </span>
+                            </strong>
+
+                            <div class="Card-description">
+                                <div class="Card-cost">
+                                    <span class="Card-price">{{ comments_count }}
+                                    </span>
+                                </div>
+
+                                <div class="Card-category">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="Card">
+                        <a class="Card-picture" href="{% url 'app_settings:product_list' %}">
+                            <img class="card-picture-image" src="/media/default_images/items_image.png" alt="товары"/>
+                        </a>
+                        <div class="Card-content">
+                            <strong class="Card-title">
+                                <span> Товары
+                                </span>
+                            </strong>
+
+                            <div class="Card-description">
+                                <div class="Card-cost">
+                                    <span class="Card-price" >
+                                        {{ items }}
+                                    </span>
+                                </div>
+
+                                <div class="Card-category">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="Card">
+                        <a class="Card-picture" href="{% url 'app_settings:category_list' %}">
+                            <img class="card-picture-image" src="/media/default_images/category.png" alt="Категории"/>
+                        </a>
+                        <div class="Card-content">
+                            <strong class="Card-title">
+                                <span>Категории
+                                </span>
+                            </strong>
+
+                            <div class="Card-description">
+                                <div class="Card-cost">
+                                    <span class="Card-price" >{{ categories }}
+                                    </span>
+                                </div>
+                                <div class="Card-category">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="Card">
+                        <a class="Card-picture" href="{% url 'app_settings:tag_list' %}">
+                            <img class="card-picture-image" src="/media/default_images/default_tag.png" alt="Теги"/>
+                        </a>
+                        <div class="Card-content">
+                            <strong class="Card-title">
+                                <span>Теги
+                                </span>
+                            </strong>
+
+                            <div class="Card-description">
+                                <div class="Card-cost">
+                                    <span class="Card-price" >{{ tags }}
+                                    </span>
+                                </div>
+
+                                <div class="Card-category">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="Card">
+                        <a class="Card-picture" href="{% url 'app_settings:settings' %}">
+                            <img class="card-picture-image" src="/media/default_images/settings_image.png" alt="Настройки"/>
+                        </a>
+                        <div class="Card-content">
+                            <strong class="Card-title">
+                                <span>Настройки
+                                </span>
+                            </strong>
+
+                            <div class="Card-description">
+                                <div class="Card-cost">
+                                    <span class="Card-price" >
+                                    </span>
+                                </div>
+
+                                <div class="Card-category">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--    CARD     -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

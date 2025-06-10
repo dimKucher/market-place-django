@@ -1,0 +1,111 @@
+{% extends 'app_store/seller_index.html' %}
+{% load static %}
+{% load cache %}
+
+{% block title %}Магазин{% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <h1 class="Middle-title">Список моих магазинов </h1>
+                {% block breadcrumbs %}
+                 <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_store:dashboard' %}">главная стариница
+                        </a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>мои магазины
+                        </span>
+                    </li>
+                </ul>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    <div class="Section Section_column Section_columnLeft">
+        <div class="wrap">
+            <div class="Section-column">
+                <div class="Section-columnSection">
+                     {% include "app_store/sidebar_seller.html" %}
+                </div>
+            </div>
+            <div class="Section-content">
+                <div class="Orders">
+                    {% for store in stores %}
+                    <div class="Order Order_anons">
+                        <a class="Order-personal" href="{% url 'app_store:store_detail' store.pk %}">
+                            <div class="row">
+                                <div class="row-block">
+                                    <div class="Order-info Order-info_delivery">
+                                        <img src="{{ store.get_logo }}" width="100" height="100">
+                                    </div>
+                                </div>
+                                <div class="row-block">
+                                    <div class="Order-info Order-info_delivery">
+                                        <div class="Order-title">
+                                            <span class="Order-numberOrder">{{store.title}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="Order-info Order-info_pay">
+                                        <div class="Order-infoType">
+                                            Описание:
+                                        </div>
+                                        <div class="Order-infoContent">
+                                            {{ store.description|truncatechars:54 }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info Order-info_delivery">
+                                        <div class="Order-infoType">Позиций товаров:
+                                        </div>
+                                        <div class="Order-infoContent">{{ store.items.count }}
+                                        </div>
+                                    </div>
+                                    <div class="Order-info Order-info_status">
+                                        <div class="Order-infoType">Статус:
+                                        </div>
+                                        <div class="Order-infoContent">
+                                            {% if store.is_active %}
+                                            <span class="seller_label">активный</span>
+                                            {% else %}
+                                            <span class="rest_label">не активный</span>
+                                            {% endif %}
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% empty %}
+
+                    <div class="Order ">
+                        <div class="Order-personal">
+                            <div class="row">
+                                <div class="Section-title">
+                                    у вас нет магазинов
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <a href="{% url 'app_store:create_store' %}"
+                                   class="btn btn_primary">+ создать новый магазин
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                        {% endfor %}
+                </div>
+                <!--       PAGINATION         -->
+                {% include "pagination/pagination.html" %}
+                <!--       PAGINATION         -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

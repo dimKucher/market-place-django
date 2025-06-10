@@ -1,0 +1,427 @@
+{% extends 'index.html' %}
+{% load static  %}
+{% load cache %}
+
+
+{% block title %}{{ item.title }}{% endblock %}
+
+{% block heard %} {% include 'search_string.html' %} {% endblock %}
+
+{% block content %}
+<div class="Middle Middle_top">
+    <div class="Middle-top">
+        <div class="wrap">
+            <div class="Middle-header">
+                <!--  TITLE -->
+                <h1 class="Middle-title">{{ item.title  }}
+                </h1>
+                <!--  TITLE -->
+
+                <!--    breadcrumbs     -->
+                <ul class="breadcrumbs Middle-breadcrumbs">
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'main' %}">главная стариница
+                        </a>
+                    </li>
+                    <li class="breadcrumbs-item">
+                        <a href="{% url 'app_item:item_category' category=item.category.slug %}">
+                            <span>{{ item.category }}
+                            </span>
+                        </a>
+                    </li>
+                    <li class="breadcrumbs-item breadcrumbs-item_current">
+                        <span>{{ item }}
+                        </span>
+                    </li>
+                </ul>
+                <!--    breadcrumbs     -->
+            </div>
+        </div>
+    </div>
+    {% include 'messages/message.html' %}
+    <div class="Section">
+        <div class="wrap">
+            <div class="{% if not item.is_available %} non_available {% endif %} Product">
+                <div class="ProductCard  ">
+                    <div class="ProductCard-look">
+                        <div class="ProductCard-photo">
+                            <img src="{{ item.main_image }}" alt="{{ item.title }}"/>
+                        </div>
+                        <div class="ProductCard-picts">
+                            <a class="ProductCard-pict ProductCard-pict_ACTIVE"
+                               href="{{ item.main_image }}">
+                                <img src="{{ item.main_image }}" alt="{{ img }}"/>
+                            </a>
+                            {% for img in item.other_images %}
+                            <a class="ProductCard-pict" href="{{ img.image.url }}">
+                                <img src="{{ img.image.url }}" alt="{{ img }}"/>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="ProductCard-desc">
+                        <div class="ProductCard-header">
+
+                            <h2 class="ProductCard-title">{{ item.title }}
+                            </h2>
+                            <div class="ProductCard-info" id="maz">
+                                <div class="ProductCard-cost">
+                                    <div class="ProductCard-price">
+                                        {% if not item.is_available %}
+                                            Товар распродан
+                                        {% else %}
+                                            ${{ item.price }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+                            {% if item.limited_edition and  item.is_available %}
+                            <span class="label-color created">осталось всего {{ item.stock }} шт.</span>
+                            {% endif %}
+                        </div>
+                        <div class="ProductCard-text">
+                            <ul>
+                                <li>{% if item.description %}{{ item.description }}
+                                    {% else %}{% lorem 2 p random %}
+                                    {% endif %}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="ProductCard-cost">
+                            <div class="ProductCard-tagsTitle">Магазин:
+                                <strong>
+                                <i class="uil uil-store-alt h2"></i>
+                                <a href="{{ item.get_store_url }}">{{ item.store| upper}}
+                                </a>
+                                </strong>
+                            </div>
+                        </div>
+
+                        {% if item.is_available  and request.user.profile.is_customer or not request.user.is_authenticated %}
+                            <div class="ProductCard-cart">
+
+                                {% if item in already_in_cart %}
+                                    <!-- UPDATE ITEM IN CART FORM & BUTTON -->
+                                    {% for cart_item in cart_dict.cart.all_items.all %}
+                                        {% if cart_item.item == item %}
+                                            <div class="ProductCard-cartElement ProductCard-cartElement_amount">
+                                                <form class="Amount Amount_product" id="update_form" method="post"
+                                                      action="{% url 'app_cart:update' pk=cart_dict.cart.pk item_id=cart_item.pk %}">
+                                                    {% csrf_token %}
+                                                    <a class="Amount-remove" type="button" id="_update-button-remove"
+                                                       data-index="{{ item.id }}"></a>
+                                                    <input id="update{{ item.id }}" name="update" type="hidden" value="1"/>
+                                                    <input class="Amount-input form-input" id="_input{{ item.id }}" readonly
+                                                           name="quantity" value="{{ cart_item.quantity }}" type="text"/>
+                                                    <a class="Amount-add" type="button" id="_update-button-add"
+                                                       data-index="{{ item.id }}"></a>
+                                                </form>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                        <div class="ProductCard-cartElement">
+                                    <button class="btn btn_dark btn_narrow" form="update_form">
+                                        <i class="uil uil-sync" style="font-size:30px"></i>
+
+
+                                    </button>
+                                </div>
+                                        <div class="ProductCard-cartElement">
+                                    <a class="btn  btn_success btn_narrow"
+                                       href="{% url 'app_cart:cart' pk=cart_dict.cart.pk  %}">{{ already_in_cart_count }} шт.
+                                        в корзине
+                                    </a>
+                                </div>
+                                    <!-- UPDATE ITEM IN CART FORM & BUTTON -->
+                                {% else %}
+                                    <!-- ADD ITEM IN CART FORM & BUTTON -->
+                                        <div class="ProductCard-cartElement ProductCard-cartElement_amount">
+                                            <form class="Amount Amount_product" id="add_form" method="post"
+                                                  action="{% url 'app_cart:add_cart' pk=item.pk  %}">
+                                                {% csrf_token %}
+                                                <a type="button" id="update-button-remove" data-index="{{ item.id }}"
+                                                   class="Amount-remove"></a>
+                                                <input id="add_{{ item.id }}" name="update" type="hidden" value="1"/>
+                                                <input class="Amount-input form-input" id="input_{{ item.id }}" readonly
+                                                       name="quantity" value="1" type="text"/>
+                                                <a type="button" id="update-button-add" data-index="{{ item.id }}"
+                                                   class="Amount-add"></a>
+                                            </form>
+                                        </div>
+                                        <div class="ProductCard-cartElement">
+                                            <button class="btn btn_primary" form="add_form">
+                                                <img class="btn-icon" src="/assets/img/icons/card/cart_white.svg"
+                                                     alt="cart_white.svg"/>
+                                                <span class="btn-content">добавить в корзину</span>
+                                            </button>
+                                        </div>
+                                    <!-- ADD ITEM IN CART FORM & BUTTON -->
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <div class="ProductCard-footer">
+                            <div class="ProductCard-tags">
+                                <strong class="ProductCard-tagsTitle">Теги: </strong>
+                                {% for tag in tags %}
+                                <a href="{{ tag.get_absolute_url  }}"># {{ tag.title }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="Tabs Tabs_default">
+                    <div class="Tabs-links">
+                        <a class="Tabs-link_ACTIVE Tabs-link" href="#description">
+                            <span>Описание</span>
+                        </a>
+                        <a class="Tabs-link" href="#addit">
+                            <span>Дополнительная информация</span>
+                        </a>
+                        <a class="Tabs-link" href="#reviews">
+                            <span>Reviews ({{ comments_count }})</span>
+                        </a>
+                    </div>
+                    <div class="Tabs-wrap">
+                        <div class="Tabs-block" id="description">
+                            <h2>{{ item.title }} </h2>
+                            <p>Lorem ipsum dolor sit amet, consectetuer&#32;
+                                <strong><a href="{{ item.get_category_url }}">
+                                    {{ item.category| lower }}</a> </strong>&#32;elit doli. Aenean commodo ligula eget dolor. Aenean
+                                massa.&#32;
+                                <a href="{{ item.get_store_url }}">
+                                    <b>{{ item.store.title| upper }}</b>
+                                </a>&#32;
+                                sociis natoque penatibus et magnis dis parturient montesti,
+                                nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eutu, pretiumem.
+                            </p>
+
+                            <img class="pict pict_right" src="{{ item.main_image }}" alt="{{ item.title }}"/>
+                            <ul>
+                                <li>Lorem ipsum dolor sit amet, consectetuer</li>
+                                <li>adipiscing elit doli.&#32;<em>Aenean</em>&#32;commodo ligula</li>
+                                <li>eget dolor. Aenean massa. Cumtipsu sociis</li>
+                                <li>natoque penatibus et magnis dis parturient</li>
+                                <li>montesti, nascetur ridiculus mus. Donec</li>
+                                <li>quam felis, ultricies nec, pellentesque eutu</li>
+                            </ul>
+                            <div class="clearfix"></div>
+                            <div class="table">
+                                <table>
+                                    <tr>
+                                        <th>Характеристика</th>
+                                        <th>Значение</th>
+                                    </tr>
+                                    {% for value in  features  %}
+                                    <tr>
+                                        <td>{{ value.feature| lower }}</td>
+                                        <td>{{ value }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                            </div>
+                        </div>
+                        <div class="Tabs-block" id="sellers">
+                            <div class="Categories Categories_product"></div>
+                        </div>
+                        <div class="Tabs-block" id="addit">
+                            <div class="Product-props">
+                                <div class="Product-prop">
+                                    <strong>Отзывы
+                                    </strong>
+                                    <span> {{ item.comments.count }}
+                                    </span>
+                                </div>
+                                 <div class="Product-prop">
+                                    <strong>Смотрели
+                                    </strong>
+                                    <span> {{ item.total_views }}
+                                    </span>
+                                </div>
+                                 <div class="Product-prop">
+                                    <strong>Купили
+                                    </strong>
+                                    <span> {{  item.purchases }}
+                                    </span>
+                                </div>
+
+
+                                {% for value in features %}
+                                <div class="Product-prop">
+                                    <strong>{{ value.feature| lower }}
+                                    </strong><span> {{ value }}</span>
+                                </div>
+                                {% endfor %}
+
+
+                            </div>
+                        </div>
+                        <div class="Tabs-block" id="reviews">
+                            <header class="Section-header">
+                                <h3 class="Section-title">
+                                    {% if comments_count != 0 %}
+                                    {{ comments_count }}
+                                    {% endif %}
+                                    {% if comments_count > 1 and comments_count < 5 %}
+                                    Отзыва
+                                    {% elif comments_count == 1 %}
+                                    Отзыв
+                                    {% elif comments_count > 4 %} Отзывов
+                                    {% else %} пока нет отзывов
+                                    {% endif %}
+                                </h3>
+                            </header>
+                            <div class="Comments">
+                                {% for comment in item.item_comments.all %}
+                                {% if comment.is_published %}
+                                <div class="Comment">
+                                    <div class="Comment-column Comment-column_pict">
+                                        {% if comment.user.is_authenticated and comment.user.profile.avatar %}
+                                        <div>
+                                            <img class="Comment-avatar-exist"
+                                                 src=" {{ comment.user.profile.get_avatar }}" width="50%">
+                                        </div>
+                                        {% else %}
+                                        <div class="Comment-avatar"></div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="Comment-column">
+                                        <header class="Comment-header">
+                                            <div>
+                                                <strong class="Comment-title">{{ comment.user.get_full_name }}
+                                                </strong>
+                                                <span class="Comment-date">
+                                                {{ comment.created|date:'F' }}&#32;&#32;/
+                                                {{ comment.created|date:"j" }}&#32;&#32;/
+                                                {{ comment.created|date:"o" }}&#32;&#32;/
+                                                {{ comment.created|date:"H:i" }}
+                                                </span>
+                                            </div>
+                                        </header>
+                                        <div class="Comment-content" >{{ comment.review }}
+                                        </div>
+                                        {% if request.user == comment.user %}
+                                        <a class="CommentHandleButton" href="#commentDeleteModal">
+                                            удалить
+                                        </a>&#160;&#160;
+                                        <a class="CommentHandleButton"
+                                           href="{% url 'app_item:comment_edit' pk=item.pk comment_id=comment.id %}">
+                                            редактировать
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                  <!--     MODAL FOR CONFIRM DELETE ITEM    -->
+                                    <div id="commentDeleteModal" class="modal-my">
+                                        <div class="modal-dialog-my">
+                                            <div class="modal-content-my">
+                                                <div class="modal-header-my">
+                                                    <a href="#close" title="Close" class="close-my">×</a>
+                                                </div>
+                                                <div class="modal-body-my">
+                                                    <div class="form Payment">
+                                                        <div class="form-group">
+                                                            Удалить комментарий
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <a href="{% url 'app_item:comment_delete' pk=item.pk comment_id=comment.id %}"
+                                                               class="btn btn_square btn_danger btn_narrow">удалить&#8195;x</a>
+                                                            <a href="#close" title="Close"
+                                                               class="btn btn_square btn_dark btn_narrow">отмена</a>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer-my"> </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--     MODAL FOR CONFIRM DELETE ITEM    -->
+                                {% endif  %}
+                                {% if comment.archived %}
+                                 <div class="Comment">
+                                    <div class="Comment-column Comment-column_pict">
+                                        {% if comment.user.is_authenticated and comment.user.profile.avatar %}
+                                        <div>
+                                            <img class="Comment-avatar-exist" src="{{ comment.user.profile.avatar.url }}">
+                                        </div>
+                                        {% else %}
+                                        <div class="Comment-avatar"></div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="Comment-column">
+                                        <header class="Comment-header">
+                                            <div>
+                                                <strong class="Comment-title">{{ comment.user.get_full_name }}</strong>
+                                                <span class="Comment-date">
+                                                {{ comment.created|date:'F' }}&#32;&#32;/
+                                                {{ comment.created|date:"j" }}&#32;&#32;/
+                                                {{ comment.created|date:"o" }}&#32;&#32;/
+                                                {{ comment.created|date:"H:i" }}
+                                                </span>
+                                            </div>
+                                        </header>
+                                        <div class="Comment-content" >
+                                            <div class="Comment-title">
+                                                <i class="uil uil-comment-block"></i>
+                                                комментрарий был удален
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+
+                                <div>
+                                    <button type="button" class="btn btn_danger"  id="hide_comment">Скрыть</button>
+                                    <button type="button" class="btn btn_primary" id="show_comment"
+                                            data-actions-icnt="comments-show">Показать </button>
+                                </div>
+                                <!--COMMENT FORM -->
+
+                            </div>
+                            <header class="Section-header Section-header_product" >
+                                <h3 class="Section-title">Добавить отзыв</h3>
+                            </header>
+                            {% if request.user.is_authenticated  and request.user.profile.is_customer %}
+                            <div class="Tabs-addComment">
+
+                                <form class="form" action="" method="post">
+                                    {% csrf_token %}
+                                    <h3 class="Section-title">{{request.user.get_full_name}}</h3>
+                                    <div class="form-group">
+                                        <textarea class="form-textarea" name="review" id="review" placeholder="Review"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <button class="btn btn_muted" type="submit">Оставить отзыв</button>
+                                    </div>
+                                </form>
+                            </div>
+                            {% else %}
+                                <h3 class="Section-title">
+                                    <a class="btn btn_success"
+                                       href="{% url 'app_user:login' %}?next={{ item.get_absolute_url }}">
+                                        Войдите
+                                    </a>
+                                    или
+                                    <a class="btn btn_success"
+                                           href="{% url 'app_user:register' %}?next={{ item.get_absolute_url }}">
+                                        зарегистрируйтесь
+                                    </a>
+                                    , чтобы добавить отзыв
+                                </h3>
+                            <div class="Tabs-addComment">
+                                  <h3 class="Section-title">{{ request.user.get_full_name }}</h3>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

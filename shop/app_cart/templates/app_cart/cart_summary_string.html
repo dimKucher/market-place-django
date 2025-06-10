@@ -1,0 +1,93 @@
+{% load static %}
+{% load cache %}
+
+<div class="Cart-total Cart">
+    <div class="Cart-block Cart-block_order ">
+    <!--    TOTAL SUM OF ORDER -->
+    <div class="Cart-total Cart-total-order ">
+
+        <strong class="Cart-title Order-infoContent-left">сумма заказа:
+        </strong>
+        {% if cart_dict.fees %}
+            <span class="Card-priceOld " data-value="{{ cart.get_total_price }}">
+                $&#160;{{ cart.get_total_price }}
+            </span>
+        {% endif %}
+        <span class="Cart-price ">${{ cart.get_total_price_with_discount|floatformat:'2' }}
+        </span>
+    </div>
+    <!--    TOTAL SUM OF ORDER -->
+
+    <!--    DISCOUNT  -->
+    {% if cart_dict.fees %}
+    <div class="Cart-total Cart-total-order ">
+        <strong class="Cart-title Order-infoContent-left">скидка:
+        </strong>
+        <div>
+            {% for shop, discount in cart_dict.book.items %}
+                {% if discount.fees != 0 %}
+                    <strong class="Cart-price">{{ discount.fees }}%
+                    </strong>&#160;{{ shop }}
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    <!--    DISCOUNT  -->
+
+    <!--    DELIVERY COST -->
+
+    {% if cart.is_free_delivery != 0 %}
+    <div class="Cart-total Cart-total-order">
+        <strong class="Cart-title Order-infoContent-left" >стоимость доставки:
+        </strong>
+        <span   class="Cart-price">+&#160;${{ cart.is_free_delivery|floatformat:'2' }}
+        </span>
+    </div>
+    <!--    DELIVERY COST -->
+
+    <!--    TOTAL SUM OF ORDER WITH DELIVERY COST -->
+    <div class="Cart-total Cart-total-order ">
+        <strong class="Cart-title Order-infoContent-left">сумма заказа  с учетом доставки:
+        </strong>
+        <span   class="Cart-price"
+              id='total_price'
+              data-value="{{ cart.total_cost_with_delivery }}">
+              $&#160;{{ cart.total_cost_with_delivery|floatformat:'2' }}
+        </span>
+    </div>
+    {% endif %}
+    <!--    TOTAL SUM OF ORDER WITH DELIVERY COST -->
+
+    <!--    FINALE COST  -->
+    <div class="Cart-total Cart-total-order ">
+
+            <strong class="Cart-title Order-infoContent-left">итого:</strong>
+            <span class="Cart-price" data-value="{{ cart.total_cost_with_delivery }} ">
+            $&#160;{{ cart.total_cost_with_delivery|floatformat:'2' }}
+            </span>
+
+    </div>
+    <!--    FINALE COST  -->
+
+    <!--    MAKE ORDER BUTTON -->
+    <div class="Cart-total Cart-total-order ">
+        {% if not_enough.enough %}
+        <div class="limited_edition_label" style="padding:5px; width:22rem; margin-bottom:5px">
+            Недостаточно товара на складе: <br>
+            {% for item in not_enough.items %}
+            - <strong> {{ item }}</strong><br>
+            {% endfor %}
+            Пожалуйста уменьшите количество в заказе
+        </div>
+
+        {% else %}
+        <a href="#openModal" id="open_order_modal" class="btn btn_success btn_lg btn_full">
+            <span>Оформить заказ </span>
+        </a>
+        {% endif %}
+    </div>
+    <!--    MAKE ORDER BUTTON -->
+
+    </div>
+</div>
